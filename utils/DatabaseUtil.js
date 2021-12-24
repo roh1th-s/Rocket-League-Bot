@@ -85,7 +85,7 @@ class DatabaseUtil {
 				let result = data ? data[key] : null;
 
 				if (result) {
-					if (Object.keys(result).length === 0) reject("No data!");
+					//if (Object.keys(result).length === 0) reject("No data!");
 
 					this.updateCache(key, result);
 					resolve(result);
