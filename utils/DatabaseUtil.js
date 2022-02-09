@@ -1,5 +1,6 @@
 const fs = require("fs");
 const { promisify } = require("util");
+const {createClient} = require("redis");
 
 const wait = promisify(setTimeout);
 
@@ -12,17 +13,40 @@ class DatabaseUtil {
 	static maxCache = 100;
 	static isSaving = false;
 
-	static initialize(client) {
+	static async initialize(client) {
 		//if (!client) throw "Client not provided";
-
 		this.client = client;
 
+		if (process.env.NODE_ENV == "production" && process.env.REDIS_URL) {
+			try {
+				this.redisClient = createClient({
+					url : process.env.REDIS_URL
+				});
+
+				this.redisClient.on("error", (err) => {
+					console.log("[Database] Redis error: " + err);
+				});
+
+				await this.redisClient.connect()
+				console.log("[Database] Connected to Redis.");
+
+				this.initialized = true;
+				return this;
+			}
+			catch(err) {
+				console.log(err);
+			}
+		}
+
+		//if not in production environment or redis is not available, use local file
 		if (!fs.existsSync(this.dbFile)) {
-			fs.writeFileSync(this.dbFile, "");
+			fs.writeFileSync(this.dbFile, "{}");
 		}
 
 		this.initialized = true;
 
+		console.log("[Database] Using local file.");
+		
 		return this;
 	}
 
@@ -66,7 +90,20 @@ class DatabaseUtil {
 	}
 
 	static async getData(key) {
-		return new Promise((resolve, reject) => {
+		return new Promise(async (resolve, reject) => {
+			if (this.redisClient) {
+				let data = await this.redisClient.hGet("users", key);
+				if (data) {
+					if (typeof(data) == "string") {
+						data = JSON.parse(data);
+					}
+					resolve(data);
+					return;
+				} else {
+					reject("No data!");
+					return;
+				}
+			}
 			let cachedItem = this.cache[key];
 			if (cachedItem) {
 				resolve(cachedItem);
@@ -96,7 +133,25 @@ class DatabaseUtil {
 		});
 	}
 
-	static setData(key, value) {
+	static async setData(key, value) {
+		if (this.redisClient) {
+			if (typeof(value) == "object") {
+				value = JSON.stringify(value);
+			}
+			return new Promise(async (resolve, reject) => {
+				try {
+					await this.redisClient.hSet("users", key, value);
+					resolve("OK");
+					return;
+				} catch(err) {
+					console.log(`[Database] Error: ${err}`);
+					reject(err);
+					return;
+				}
+				
+			})
+		}
+
 		this.addToQueue(key, value);
 		this.updateCache(key, value);
 

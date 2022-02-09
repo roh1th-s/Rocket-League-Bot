@@ -1,5 +1,9 @@
 require("dotenv").config(); //add env to global process variable
 //https://rr.noordstar.me/data/293544e4 lol
+const args = process.argv.slice(2)
+if (args.length && args[0].toLowerCase().startsWith("-prod")) {
+	process.env.NODE_ENV = "production";
+}
 
 const fs = require("fs");
 const Config = require("./config.json");
@@ -8,6 +12,8 @@ const Client = new Discord.Client({
 	intents: ["GUILDS", "GUILD_MESSAGES", "GUILD_EMOJIS_AND_STICKERS"],
 });
 
+const DatabaseUtil = require("./utils/DatabaseUtil");
+const RequestUtil = require("./utils/RequestUtil");
 const EmbedUtil = require("./utils/EmbedUtil");
 
 Client.config = Config;
@@ -15,6 +21,12 @@ Client.config = Config;
 Client.commands = new Discord.Collection();
 Client.aliases = new Discord.Collection();
 Client.cooldowns = new Discord.Collection();
+
+// all of these are initialized only once, because of the require cache
+// if they are required later by other modules, they will already be in an initalized state
+EmbedUtil.initialize(Client);
+RequestUtil.initialize(Client);
+DatabaseUtil.initialize(Client);
 
 const commandFiles = fs.readdirSync("./commands").filter((file) => file.endsWith(".js"));
 for (const file of commandFiles) {
@@ -31,12 +43,12 @@ for (const file of commandFiles) {
 }
 
 Client.once("ready", () => {
-	console.log("Logged in.");
+	console.log(`---------------------------------\nLogged in as ${Client.user.tag}`);
 });
 
-Client.on("messageCreate", (msg) => {
+Client.on("messageCreate", async (msg) => {
 	if (msg.author.bot) return;
-
+    
 	const prefix = Client.config.prefix;
 	if (msg.type != "REPLY" && msg.mentions.users.has(Client.user.id)) {
 		msg.channel.send({
@@ -51,29 +63,43 @@ Client.on("messageCreate", (msg) => {
 		});
 	}
 
-    //Yoad business - 740062244058038283
+    
     try {
+        //Yoad business - 740062244058038283
         if (msg.type != "REPLY" && msg.author.id == "740062244058038283" && msg.mentions.users.has("621324161914109952")) {
             let timeout = Client.cooldowns.get(msg.author.id)
-            if (timeout) {
+            if (timeout || (getNoOfMentions(msg.content, "621324161914109952") >= 3)) {
                 
                 let role= msg.member.guild.roles.cache.find(role => role.name === "Muted");
 
                 if(role) {
                     msg.reply("stop spam pinging him nub. get muted")
-                    msg.member.roles.add(role);
+                    await msg.member.roles.add(role);
                     clearTimeout(timeout);
                     return Client.cooldowns.set(msg.author.id, null)
                 }
             }
-        
+
             Client.cooldowns.set(msg.author.id, setTimeout(() => {
                 Client.cooldowns.set(msg.author.id, null);
             }, 30000));
         }
+
+         //pathu - 745143467495129160
+         if (msg.author.id == "745143467495129160" && msg.content.toLowerCase().startsWith("hi") && msg.content.length < 2) {
+
+              let role= msg.member.guild.roles.cache.find(role => role.name === "Muted");
+
+                if(role) {
+                    msg.reply("shush pathu")
+                    msg.member.roles.add(role);
+                }
+         }
+
     } catch(err) {
         console.log(err);
     }
+
 
 	if (!msg.content.startsWith(prefix)) return;
 
@@ -108,9 +134,29 @@ Client.on("messageCreate", (msg) => {
 	}
 });
 
-Client.on("invalidated", () => {
+/* Client.on("invalidated", () => {
     console.log("invalidated")
-     process.exit(0);
-})
+    process.exit(0);
+}) */
 
+/* try {
+    const http = require('http');
+    const PORT = 443
+    console.log("Starting up server")
+    http.createServer((req, res) => {
+    res.writeHead(200);
+    res.end();
+    }).listen(PORT, () => {
+        console.log("Http server up on port: " + PORT)
+    });
+} catch(err) {
+    console.log(err)
+} */
+
+//console.log("Trying to login..")
 Client.login(process.env.TOKEN);
+
+function getNoOfMentions(messageContent, userId) {
+	const mentions = messageContent.match(Discord.MessageMentions.USERS_PATTERN);
+	return mentions ? mentions.filter((mention) => mention.includes(userId)).length : 0;
+}
