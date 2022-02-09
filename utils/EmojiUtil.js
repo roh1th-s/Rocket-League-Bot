@@ -9,11 +9,14 @@ class EmojiUtil {
 		this.client = client;
 
 		if (!this.emojiGuild) {
-			this.emojiGuild = await client.guilds.fetch("849218716922544138");
+			this.emojiGuild = await client.guilds.fetch(client.config.mainGuildId || "849218716922544138");
 			await this.emojiGuild.emojis.fetch();
 		}
 
 		this.initialized = true;
+
+		console.log("[EmojiUtil] Initialized");
+		
 		return this;
 	}
 
