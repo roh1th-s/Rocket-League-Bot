@@ -1,4 +1,4 @@
-const axios = require("axios").default;
+const RequestUtil = require("./RequestUtil");
 
 class StatsUtils {
 	static trackerApiUrl = "https://api.tracker.gg/api/v2/rocket-league/standard/profile";
@@ -16,6 +16,10 @@ class StatsUtils {
 			return "psn";
 		} else if (platform.includes("steam")) {
 			return "steam";
+		} else if (platform.includes("xbl") || platform.includes("xbox")) {
+			return "xbl";
+		} else if (platform.includes("switch")) {
+			return "switch";
 		} else {
 			return false;
 		}
@@ -62,12 +66,16 @@ class StatsUtils {
 		let data;
 
 		try {
-			const res = await axios.get(
+			const res = await RequestUtil.get(
 				`${this.trackerApiUrl}/${platform}/${username}/segments/playlist?season=${currentSeason}`
 			);
-			data = res.data.data;
+			if (!(res.status >= 200 && res.status < 300)) 
+				throw "Non-2xx status code : " + res.status;
+
+			data = JSON.parse(res.body).data;
 		} catch (err) {
-			throw err;
+			console.error(err);
+			return {};
 		}
 
 		let playlistData = {};
@@ -102,10 +110,15 @@ class StatsUtils {
 		let rawJsonData;
 
 		try {
-			const res = await axios.get(`${this.trackerApiUrl}/${platform}/${username}?`);
-			rawJsonData = res.data.data;
+			const res = await RequestUtil.get(`${this.trackerApiUrl}/${platform}/${username}?`);
+
+			if (!(res.status >= 200 && res.status < 300)) 
+				throw "Non-2xx status code : " + res.status;
+
+			rawJsonData = JSON.parse(res.body).data;
 		} catch (err) {
-			throw err;
+			console.error(err);
+			return false;
 		}
 
 		if (!rawJsonData) return false;

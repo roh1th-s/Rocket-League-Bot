@@ -11,6 +11,9 @@ class EmbedUtil {
 		if (!EmojiUtil.initialized) EmojiUtil.initialize(client);
 		
 		this.initialized = true;
+		
+		console.log("[EmbedUtil] Initialized");
+
 		return this;
 	}
 
