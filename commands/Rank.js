@@ -11,7 +11,7 @@ class Rank {
 		this.name = "rank";
 		this.aliases = ["r", "ranks"];
 		this.description = "See a player's rank.";
-		this.usage = "rank <username> <platform (epic, steam, psn)>";
+		this.usage = "rank <username> <platform (epic, steam, psn, xbl, switch)>";
 	}
 
 	async execute(msg, args) {
@@ -119,7 +119,7 @@ class Rank {
 					embeds: [
 						EmbedUtil.ErrorEmbed(
 							"Invalid platform",
-							`Accepted platforms are \`epic, steam, psn\`.\nCorrect usage : ${correctUsage}`
+							`Accepted platforms are \`epic, steam, psn, xbl, switch\`.\nCorrect usage : ${correctUsage}`
 						),
 					],
 				});

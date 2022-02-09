@@ -11,7 +11,7 @@ module.exports = class Stats {
 		this.name = "stats";
 		this.aliases = ["s"];
 		this.description = "See a player's stats";
-		this.usage = "stats <username> <platform (epic, steam, psn)>";
+		this.usage = "stats <username> <platform (epic, steam, psn, xbl, switch)>";
 	}
 
 	async execute(msg, args) {
@@ -74,8 +74,8 @@ module.exports = class Stats {
 					});
 				}
 			}
-		} 
-		
+		}
+
 		if (!(username && platform)) {
 			if (args.length < 3) {
 				username = args[0];
@@ -119,7 +119,7 @@ module.exports = class Stats {
 					embeds: [
 						EmbedUtil.ErrorEmbed(
 							"Invalid platform",
-							`Accepted platforms are \`epic, steam, psn\`.\nCorrect usage : ${correctUsage}`
+							`Accepted platforms are \`epic, steam, psn, xbl, switch\`.\nCorrect usage : ${correctUsage}`
 						),
 					],
 				});
@@ -153,13 +153,21 @@ module.exports = class Stats {
 					const rankName = statData.metadata && statData.metadata.rankName;
 					const value = statData.value;
 
+					/* if (statName === "seasonrewardlevel") {
+						console.log(platform + " - Platform");
+						console.log(statData.percentile);
+					} */
+
+					//sometimes, percentile (maybe only for steam and switch)can be directly put into Top {percentile}%
+					//rest of the times, it needs to be calculated (100 - percentile)%
+					//TODO: Figure out why this is happening
 					StatsEmbed.addField(
 						statData.displayName,
 						statName === "seasonrewardlevel"
 							? rankName.toLowerCase() !== "none"
-								? `${emojis.fromRank(rankName)} ${rankName} | Top ${(100 - statData.percentile).toFixed(
-										2
-								  )} %`
+								? `${emojis.fromRank(rankName)} ${rankName}` + (["steam", "switch"].includes(platform)
+									? ""
+									: ` | Top ${(100 - statData.percentile).toFixed(2)} %`)
 								: "None"
 							: `${!Number.isInteger(value) ? value.toFixed(2) : value}`,
 						true

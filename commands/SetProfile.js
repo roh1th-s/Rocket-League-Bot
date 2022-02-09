@@ -8,7 +8,7 @@ class SetProfile {
 		this.name = "setprofile";
 		this.aliases = ["set"];
 		this.description = "Set your username and platform to view stats.";
-		this.usage = "setprofile <username> <platform (epic, steam, psn)>";
+		this.usage = "setprofile <username> <platform (epic, steam, psn, xbl, switch)>";
 	}
 
 	async execute(msg, args) {
@@ -23,7 +23,7 @@ class SetProfile {
 
 		if (args[0] && args[0].toLowerCase() == "reset") {
 			try {
-				DbUtil.setData(msg.author.id, {});
+				await DbUtil.setData(msg.author.id, {});
 			} catch (err) {
 				console.log(err);
 				return msg.reply({
@@ -81,16 +81,39 @@ class SetProfile {
 					embeds: [
 						EmbedUtil.ErrorEmbed(
 							"Invalid platform",
-							`Accepted platforms are \`epic, steam, psn\`.\nCorrect usage : ${correctUsage}`
+							`Accepted platforms are \`epic, steam, psn, xbl, switch\`.\nCorrect usage : ${correctUsage}`
 						),
 					],
 				});
 			}
+
 		}
 
-		DbUtil.setData(msg.author.id, { username, platform });
+		const tempMsg = await msg.reply({
+			embeds: [EmbedUtil.LoadingEmbed("Just a sec", "Checking account..")],
+		});
+		// Check if user exists
+		if (!(await StatsUtil.getStats(username, platform))) {
+			return tempMsg.edit({
+				embeds: [
+					EmbedUtil.ErrorEmbed(
+						"Invalid account",	
+						"Could not find a profile that matches the details you provided."
+					),
+				],
+			});
+		}
 
-		return msg.reply({
+		try {
+			await DbUtil.setData(msg.author.id, { username, platform });
+		} catch (err) {
+			console.log(err);
+			return tempMsg.edit({
+				embeds: [EmbedUtil.ErrorEmbed("Database error", `Something went wrong, try again!`)],
+			});
+		}
+
+		return tempMsg.edit({
 			embeds: [
 				EmbedUtil.SuccessEmbed(
 					"Profile updated",
