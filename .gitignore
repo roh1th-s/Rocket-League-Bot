@@ -6,6 +6,8 @@
 
 /assets
 
+/build
+
 .env
 
 db.json
@@ -14,4 +16,5 @@ playlists.json
 
 test.html
 
+testtoken.txt
 
