@@ -10,7 +10,7 @@
   "author": "Rohith",
   "license": "MIT",
   "dependencies": {
-    "cycletls": "^0.0.15-alpha.0",
+    "cycletls": "^0.0.18",
     "discord.js": "^13.2.0",
     "dotenv": "^10.0.0",
     "redis": "^4.0.3"
