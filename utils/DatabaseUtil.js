@@ -17,7 +17,7 @@ class DatabaseUtil {
 		//if (!client) throw "Client not provided";
 		this.client = client;
 
-		if (process.env.NODE_ENV == "production" && process.env.REDIS_URL) {
+		if (!(process.env.NODE_ENV == "development") && process.env.REDIS_URL) {
 			try {
 				this.redisClient = createClient({
 					url : process.env.REDIS_URL
