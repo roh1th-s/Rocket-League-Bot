@@ -1,9 +1,10 @@
-const DatabaseUtil = require("../utils/DatabaseUtil").initialize();
-DatabaseUtil.dbFile = "./test.db.json"
+let DatabaseUtil;
 
 const fs = require('fs')
 
-beforeAll(() => {
+beforeAll(async () => {
+	DatabaseUtil = await require("../utils/DatabaseUtil").initialize();
+	DatabaseUtil.dbFile = "./test.db.json"
 	return fs.writeFileSync(DatabaseUtil.dbFile, "{}")
 });
 
@@ -13,7 +14,7 @@ afterAll(() => {
 
 test("Setting data", async () => {
 	for (let i = 1; i <= 100; i++) {
-		DatabaseUtil.setData(`Test${i}`, { username: "xXRSTCXx", platform: "epic" });
+		await DatabaseUtil.setData(`Test${i}`, { username: "xXRSTCXx", platform: "epic" });
 	}
 
 	for (let i = 1; i <= 100; i++) {
