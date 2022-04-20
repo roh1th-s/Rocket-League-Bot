@@ -1,11 +1,7 @@
 /.vscode
-
 /node_modules
-
 /scripts
-
 /assets
-
 /build
 
 .env

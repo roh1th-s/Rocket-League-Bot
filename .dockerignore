@@ -1,0 +1,13 @@
+.vscode
+node_modules
+scripts
+assets
+
+db.json
+playlists.json
+test.html
+testtoken.txt
+
+.git
+.gitignore
+

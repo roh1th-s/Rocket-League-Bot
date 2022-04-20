@@ -6,7 +6,6 @@ if (args.length && args[0].toLowerCase().startsWith("-prod")) {
 }
 
 const fs = require("fs");
-const Config = require("./config.json");
 const Discord = require("discord.js");
 const Client = new Discord.Client({
 	intents: ["GUILDS", "GUILD_MESSAGES", "GUILD_EMOJIS_AND_STICKERS"],
@@ -16,7 +15,10 @@ const DatabaseUtil = require("./utils/DatabaseUtil");
 const RequestUtil = require("./utils/RequestUtil");
 const EmbedUtil = require("./utils/EmbedUtil");
 
-Client.config = Config;
+Client.config = {
+	prefix: process.env.PREFIX || "!",
+	mainGuildId: process.env.MAIN_GUILD_ID || "849218716922544138",
+};
 
 Client.commands = new Discord.Collection();
 Client.aliases = new Discord.Collection();
