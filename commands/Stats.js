@@ -165,9 +165,10 @@ module.exports = class Stats {
 						statData.displayName,
 						statName === "seasonrewardlevel"
 							? rankName.toLowerCase() !== "none"
-								? `${emojis.fromRank(rankName)} ${rankName}` + (["steam", "switch"].includes(platform)
-									? ""
-									: ` | Top ${(100 - statData.percentile).toFixed(2)} %`)
+								? `${emojis.fromRank(rankName)} ${rankName}` 
+									// + (["steam", "switch"].includes(platform)
+									// 	? ""
+									// 	: ` | Top ${(100 - statData.percentile).toFixed(2)} %`)
 								: "None"
 							: `${!Number.isInteger(value) ? value.toFixed(2) : value}`,
 						true
