@@ -67,12 +67,13 @@ class StatsUtils {
 
 		try {
 			const res = await RequestUtil.get(
-				`${this.trackerApiUrl}/${platform}/${username}/segments/playlist?season=${currentSeason}`
+				`${this.trackerApiUrl}/${platform}/${username}/segments/playlist?season=${currentSeason}`,
 			);
 			if (!(res.status >= 200 && res.status < 300)) 
 				throw "Non-2xx status code : " + res.status;
 
-			data = JSON.parse(res.body).data;
+			data = res.body.data;
+			// data = JSON.parse(res.body).data;
 		} catch (err) {
 			console.error(err);
 			return {};
@@ -114,8 +115,9 @@ class StatsUtils {
 
 			if (!(res.status >= 200 && res.status < 300)) 
 				throw "Non-2xx status code : " + res.status;
-
-			rawJsonData = JSON.parse(res.body).data;
+			
+			//rawJsonData = JSON.parse(res.body).data;
+			rawJsonData = res.body.data;
 		} catch (err) {
 			console.error(err);
 			return false;
